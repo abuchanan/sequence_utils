@@ -34,26 +34,30 @@ def get_transcript_seq(genome_sequence, exons, reverse=False):
     return seq
 
 
-ORF = namedtuple('ORF', 'start end')
+class OrfFinder(object):
 
-def find_orfs(seq):
+    ORF = namedtuple('ORF', 'start end')
 
-    orfs = []
+    def __call__(self, seq):
+        orfs = []
 
-    for match in re.finditer('ATG', seq):
-        # Find a start codon
-        start = match.start()
+        for match in re.finditer('ATG', seq):
+            # Find a start codon
+            start = match.start()
 
-        end = 0
-        for i, codon in enumerate(codons(seq[start:])):
-            if codon in STOP_CODONS:
-                # A stop codon was found, set the end position and return the ORF
-                end = start + i * 3 + 3
-                orfs.append(ORF(start + 1, end))
-                break
+            end = 0
+            for i, codon in enumerate(codons(seq[start:])):
+                if codon in STOP_CODONS:
+                    # A stop codon was found,
+                    # set the end position and return the ORF
+                    end = start + i * 3 + 3
+                    orfs.append(self.ORF(start + 1, end))
+                    break
 
-    return orfs
+        return orfs
 
+
+find_orfs = OrfFinder()
 
 STOP_CODONS = ('TAA', 'TAG', 'TGA')
 
